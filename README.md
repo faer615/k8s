@@ -164,4 +164,6 @@ kubectl create -f yaml/02-dashboard
 # 安装dashboard
 kubectl create -f yaml/03-heapster
 ```
+---
+## 自动添加新加工作节点命令
 kubectl get csr|grep 'Pending' | awk 'NR>0{print $1}'| xargs kubectl certificate approve
