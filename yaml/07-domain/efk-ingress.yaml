@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: efk.chinadaas.com
+  namespace: kube-system
+spec:
+  rules:
+  - host: kibana.chinadaas.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kibana-logging
+          servicePort: 5601
+  - host: es.chinadaas.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: elasticsearch-head
+          servicePort: 9100

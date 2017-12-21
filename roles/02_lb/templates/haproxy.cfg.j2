@@ -1,0 +1,36 @@
+global
+    log         127.0.0.1 local2 info
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     50000
+    user        haproxy
+    group       haproxy
+    tune.comp.maxlevel 9
+    maxcompcpuusage 50
+    daemon
+    stats socket /var/lib/haproxy/stats level admin
+    nbproc 1
+
+defaults
+        log     global
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+
+listen stats *:8888
+    mode http
+    stats                   enable
+    stats                   hide-version
+    stats                   uri /admin
+    stats                   realm Haproxy\ Statistics
+    stats                   auth admin:admin
+    stats                   admin if TRUE
+
+listen kube-master
+        bind *:{{ MASTER_PORT }}
+        mode tcp
+        option tcplog
+        balance source
+        server apiserver_61 {{ LB_EP1 }} check inter 10000 fall 2 rise 2 weight 1
+        server apiserver_62 {{ LB_EP2 }} check inter 10000 fall 2 rise 2 weight 1
+        server apiserver_62 {{ LB_EP3 }} check inter 10000 fall 2 rise 2 weight 1

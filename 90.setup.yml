@@ -1,0 +1,43 @@
+# 在deploy节点生成CA相关证书，以供整个集群使用
+- hosts: deploy
+  roles:
+  - 01_ca
+
+# 集群节点的公共配置任务
+- hosts:
+  - kube-cluster
+  - deploy
+  - etcd
+  roles:
+  - 02_pki
+
+# [可选]多master部署时的负载均衡配置
+- hosts: lb
+  roles:
+  - 02_lb
+
+- hosts: etcd
+  roles:
+  - 03_etcd
+
+- hosts: 
+  - kube-cluster
+  - deploy
+  roles:
+  - 04_kubectl
+
+- hosts: kube-cluster
+  roles:
+  - bin_docker
+
+- hosts: kube-cluster
+  roles:
+  - 06_calico
+
+- hosts: kube-master
+  roles:
+  - 07_master
+
+- hosts: kube-node
+  roles:
+  - 08_node

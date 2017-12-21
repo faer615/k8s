@@ -1,0 +1,41 @@
+- hosts: new-node
+  tasks:
+  - name: stop kube-node service
+    shell: "systemctl stop kubelet kube-proxy"
+    ignore_errors: true
+
+  - name: umount kubelet 挂载的目录
+    shell: "mount | grep '/var/lib/kubelet'| awk '{print $3}'|xargs umount"
+    ignore_errors: true
+
+  - name: 清理目录和文件
+    file: name={{ item }} state=absent
+    with_items:
+    - "/var/lib/kubelet/"
+    - "/etc/kubernetes/"
+    - "/etc/systemd/system/kubelet.service"
+    - "/etc/systemd/system/kube-proxy.service"
+
+  - name: 清理文件
+    file: name=/usr/local/bin/{{ item }} state=absent
+    with_items:
+    - calico
+    - calicoctl
+    - calico-ipam
+    - cfssl
+    - cfssl-certinfo
+    - cfssljson
+    - docker
+    - docker-ce-17.09.1.ce-1.el7.centos.x86_64.rpm
+    - docker-containerd
+    - docker-containerd-ctr
+    - docker-containerd-shim
+    - dockerd
+    - docker-init
+    - docker-proxy
+    - docker-runc
+    - docker-tag
+    - kubectl
+    - kubelet
+    - kube-proxy
+    - loopback

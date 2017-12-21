@@ -1,0 +1,12 @@
+# 集群节点的公共配置任务
+- hosts:
+  - kube-cluster
+  - deploy
+  - etcd
+  roles:
+  - 02_pki 
+
+# [可选]多master部署时的负载均衡配置
+- hosts: lb
+  roles:
+  - 02_lb

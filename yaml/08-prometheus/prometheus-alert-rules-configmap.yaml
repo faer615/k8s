@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alert-rules
+  namespace: kube-system
+data:
+  alert.rules: |-
+    ## alert.rules ##
+
+    #
+    # CPU Alerts
+    #
+    ALERT HighCPU
+      IF ((sum(node_cpu{mode=~"user|nice|system|irq|softirq|steal|idle|iowait"}) by (instance, job)) - ( sum(node_cpu{mode=~"idle|iowait"}) by (instance,job) )   )   /  (sum(node_cpu{mode=~"user|nice|system|irq|softirq|steal|idle|iowait"}) by (instance, job)) * 100 > 95
+      FOR 10m
+      LABELS { service = "backend" }
+      ANNOTATIONS {
+        summary = "High CPU Usage",
+        description = "This machine  has really high CPU usage for over 10m",
+      }
+
+    #
+    # DNS Lookup failures
+    #
+    ALERT DNSLookupFailureFromPrometheus
+      IF prometheus_dns_sd_lookup_failures_total > 5
+      FOR 1m
+      LABELS { service = "frontend" }
+      ANNOTATIONS {
+        summary = "Prometheus reported over 5 DNS lookup failure",
+        description = "The prometheus unit reported that it failed to query the DNS.  Look at the kube-dns to see if it is having any problems",
+      }
+
+    #
+    #    # CPU Lookup failures
+    #        #
+    #
+
+    ALERT ContinerCPUCheck
+      IF sum(rate(container_cpu_usage_seconds_total{pod_name=~".+",container_name!="POD"}[2m])) by (pod_name,instance,container_name) * 100 >500
+      FOR 1m
+      LABELS { check_type = "cpu" }
+      ANNOTATIONS {
+        summary = "主机:{{ $labels.instance }} {{ $labels.container_name }} Service 压力过高",
+        description = "CPU使用率超过500% 当前值为{{ $value }}%",
+      }
+

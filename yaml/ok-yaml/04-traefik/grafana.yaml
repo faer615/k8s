@@ -1,0 +1,15 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: monitoring-grafana
+  namespace: kube-system
+spec:
+  rules:
+  - host: node66.ko178.cn 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: monitoring-grafana 
+          servicePort: 80

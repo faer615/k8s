@@ -1,0 +1,30 @@
+- name: 下载etcd二进制文件
+  copy: src={{ pkg_dir }}/etcd-pkg/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
+  with_items:
+  - etcd
+  - etcdctl
+
+- name: 创建etcd证书目录
+  file: name=/etc/etcd/ssl state=directory
+
+- name: 创建etcd工作目录
+  file: name=/var/lib/etcd state=directory
+
+- name: 创建CA证书目录
+  file: name=/etc/kubernetes/ssl state=directory
+
+- name: 创建etcd的systemd unit文件
+  template: src=etcd.service.j2 dest=/etc/systemd/system/etcd.service
+
+- name: 拷贝CA证书文件
+  copy: src={{ base_dir }}/roles/02_pki/files/ca.pem dest={{ ca_dir }}/ca.pem
+
+- name: 拷贝etcd证书文件
+  copy: src={{ base_dir }}/roles/02_pki/files/{{ item }} dest=/etc/etcd/ssl/{{ item }}
+  with_items:
+  - etcd.pem
+  - etcd-key.pem
+
+- name: 开启etcd服务
+  shell: systemctl daemon-reload && systemctl enable etcd && systemctl restart etcd
+

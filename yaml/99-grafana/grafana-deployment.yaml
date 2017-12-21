@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: registry.chinadaas.com/kubernetes/grafana:v4.3.2
+        ports:
+          - containerPort: 3000
+            protocol: TCP
+        volumeMounts:
+#        - mountPath: /etc/grafana/grafana.ini
+#          name: grafana-storage-vol1
+        - mountPath: /var/lib/grafana
+          name: grafana-storage-vol2
+      volumes:
+#      - name: grafana-storage-vol1
+#        hostPath:
+#          path: /data/grafana.ini
+      - name: grafana-storage-vol2
+        hostPath:
+          path: /data/grafana-data

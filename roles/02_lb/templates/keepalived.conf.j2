@@ -1,0 +1,24 @@
+! Configuration File for keepalived
+global_defs {
+   router_id {{ LB_ROLE }} 
+}
+
+vrrp_instance VI_1_backup_1 {
+    state BACKUP
+    interface {{ LB_IF }}
+    dont_track_primary
+    mcast_src_ip {{ NODE_IP }}
+    virtual_router_id 20
+    priority {{ PR_NU }}
+    advert_int 3
+    authentication {
+        auth_type PASS
+        auth_pass password
+    }
+    virtual_ipaddress {
+        {{ MASTER_IP }}
+    }
+    track_script {
+        chk_http_port
+    }
+}

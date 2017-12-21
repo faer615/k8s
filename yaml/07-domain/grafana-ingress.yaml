@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: grafana.chinadaas.com
+  namespace: kube-system
+spec:
+  rules:
+  - host: grafana.chinadaas.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: grafana
+          servicePort: 80
