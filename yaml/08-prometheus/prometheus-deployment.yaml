@@ -20,7 +20,7 @@ spec:
       containers:
       # Prometheus server
       - name: prometheus
-        image: registry.chinadaas.com/kubernetes/prometheus
+        image: registry.chinadaas.com/prometheus/prometheus:v2.0.0
         args:
           - '-storage.local.retention=72h'
           - '-storage.local.path=/home'
@@ -47,7 +47,7 @@ spec:
 
       #Alert manager
       - name: alertmanager
-        image: registry.chinadaas.com/kubernetes/alertmanager
+        image: registry.chinadaas.com/prometheus/alertmanager:v0.9.1 
         args:
           - -config.file=/etc/prometheus/alertmanager.yml
         volumeMounts:

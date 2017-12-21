@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: example-app 
-        image: quay.io/fabxc/prometheus_demo_service
+        image: registry.chinadaas.com/prometheus/prometheus_demo_service:latest 
         ports:
         - name: web
           containerPort: 8080
