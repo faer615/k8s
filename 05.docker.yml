@@ -1,11 +1,11 @@
 # 可使用二进制或者yum方式安装部署，任选其一
 #
 # 使用二进制安装部署
-#- hosts: kube-cluster
-#  roles:
-#  - bin_docker
-
-# 使用yum安装部署
 - hosts: kube-cluster
   roles:
-  - yum_docker
+  - bin_docker
+
+# 使用yum安装部署
+#- hosts: kube-cluster
+#  roles:
+#  - yum_docker
