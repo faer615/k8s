@@ -164,5 +164,4 @@ kubectl create -f yaml/02-dashboard
 # 安装dashboard
 kubectl create -f yaml/03-heapster
 ```
-
-    kubectl get csr|grep 'Pending' | awk 'NR>0{print $1}'| xargs kubectl certificate approve
+kubectl get csr|grep 'Pending' | awk 'NR>0{print $1}'| xargs kubectl certificate approve
