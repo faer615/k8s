@@ -1,5 +1,5 @@
 ##----------kubelet 配置部分--------------
-- name: 下载 kubelet和kube-proxy 二进制
+- name: 01.下载 kubelet和kube-proxy 二进制
   copy: src={{ pkg_dir }}/node-pkg/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
   with_items:
   - kubelet
@@ -8,114 +8,113 @@
 # kubelet 启动时向 kube-apiserver 发送 TLS bootstrapping 请求，需要绑定该角色
 # 只需单节点执行一次，重复执行的报错可以忽略
 # 增加15s等待kube-apiserver正常工作
-- name: kubelet-bootstrap-setting
+- name: 02.kubelet-bootstrap-setting
   shell: "sleep 15 && {{ bin_dir }}/kubectl create clusterrolebinding kubelet-bootstrap \
         --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap"
   when: NODE_ID is defined and NODE_ID == "node1"
   ignore_errors: true
 
 #创建bootstrap.kubeconfig配置文件
-- name: 设置集群参数
+- name: 03.设置集群参数
   shell: "{{ bin_dir }}/kubectl config set-cluster kubernetes \
         --certificate-authority={{ ca_dir }}/ca.pem \
         --embed-certs=true \
         --server={{ KUBE_APISERVER }} \
         --kubeconfig=bootstrap.kubeconfig"
 
-- name: 设置客户端认证参数
+- name: 04.设置客户端认证参数
   shell: "{{ bin_dir }}/kubectl config set-credentials kubelet-bootstrap \
         --token={{ BOOTSTRAP_TOKEN }} \
         --kubeconfig=bootstrap.kubeconfig"
 
-- name: 设置上下文参数
+- name: 05.设置上下文参数
   shell: "{{ bin_dir }}/kubectl config set-context default \
 	--cluster=kubernetes \
 	--user=kubelet-bootstrap \
 	--kubeconfig=bootstrap.kubeconfig"
-- name: 选择默认上下文
+- name: 06.选择默认上下文
   shell: "{{ bin_dir }}/kubectl config use-context default --kubeconfig=bootstrap.kubeconfig"
 
-- name: 安装bootstrap.kubeconfig配置文件
+- name: 07.安装bootstrap.kubeconfig配置文件
   shell: "mv $HOME/bootstrap.kubeconfig /etc/kubernetes/bootstrap.kubeconfig"
 
-- name: 创建kubelet的工作目录
+- name: 08.创建kubelet的工作目录
   file: name=/var/lib/kubelet state=directory
 
-- name: 创建kubelet的systemd unit文件
+- name: 09.创建kubelet的systemd unit文件
   template: src=kubelet.service.j2 dest=/etc/systemd/system/kubelet.service
 
-- name: 开启kubelet 服务
+- name: 10.启动kubelet 服务
   shell: systemctl daemon-reload && systemctl enable kubelet && systemctl restart kubelet
 
-- name: approve-kubelet-csr
+- name: 11.授权客户端
   shell: "sleep 15 && {{ bin_dir }}/kubectl get csr|grep 'Pending' | awk 'NR>0{print $1}'| xargs {{ bin_dir }}/kubectl certificate approve"
   when: NODE_ID is defined and NODE_ID == "node1"
   ignore_errors: true
 
 ##-------kube-proxy部分----------------
-- name: 拷贝kubernetes 证书文件
+- name: 12.拷贝kubernetes 证书文件
   template: src={{ ca_dir }}/{{ item }} dest={{ ca_dir }}/{{ item }}
   with_items:
   - ca.pem
   - kube-proxy.pem
   - kube-proxy-key.pem
 
-
 #创建kube-proxy.kubeconfig配置文件
-- name: 设置集群参数
+- name: 13.设置集群参数
   shell: "{{ bin_dir }}/kubectl config set-cluster kubernetes \
         --certificate-authority={{ ca_dir }}/ca.pem \
         --embed-certs=true \
         --server={{ KUBE_APISERVER }} \
         --kubeconfig=kube-proxy.kubeconfig"
 
-- name: 设置客户端认证参数
+- name: 14.设置客户端认证参数
   shell: "{{ bin_dir }}/kubectl config set-credentials kube-proxy \
 	--client-certificate={{ ca_dir }}/kube-proxy.pem \
 	--client-key={{ ca_dir }}/kube-proxy-key.pem \
         --embed-certs=true \
         --kubeconfig=kube-proxy.kubeconfig"
 
-- name: 设置上下文参数
+- name: 15.设置上下文参数
   shell: "{{ bin_dir }}/kubectl config set-context default \
         --cluster=kubernetes \
         --user=kube-proxy \
         --kubeconfig=kube-proxy.kubeconfig"
 
-- name: 选择默认上下文
+- name: 16.选择默认上下文
   shell: "{{ bin_dir }}/kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig"
 
-- name: 安装kube-proxy.kubeconfig配置文件
+- name: 17.安装kube-proxy.kubeconfig配置文件
   shell: "mv $HOME/kube-proxy.kubeconfig /etc/kubernetes/kube-proxy.kubeconfig"
 
-- name: 创建kube-proxy的工作目录
+- name: 18.创建kube-proxy的工作目录
   file: name=/var/lib/kube-proxy state=directory
 
-- name: 创建kube-proxy 服务文件
+- name: 19.创建kube-proxy 服务文件
   tags: reload-kube-proxy
   template: src=kube-proxy.service.j2 dest=/etc/systemd/system/kube-proxy.service
 
-- name: 开启kube-proxy 服务
+- name: 20.启动kube-proxy 服务
   tags: reload-kube-proxy
   shell: systemctl daemon-reload && systemctl enable kube-proxy && systemctl restart kube-proxy
 
 ##-------calico-kube-controllers部分----------------
 #
-- name: 创建calico-kube-controllers目录
+- name: 21.创建calico-kube-controllers目录
   tags: calico-controller
   file: name=/usr/local/calico state=directory
 
-- name: 准备RBAC 配置文件
+- name: 22.准备RBAC 配置文件
   tags: calico-controller
   copy: src=rbac.yaml dest=/usr/local/calico/rbac.yaml
 
-- name: 准备calico-kube-controllers.yaml 文件
+- name: 23.准备calico-kube-controllers.yaml 文件
   tags: calico-controller
   template: src=calico-kube-controllers.yaml.j2 dest=/usr/local/calico/calico-kube-controllers.yaml
 
 # 只需单节点执行一次，重复执行的报错可以忽略
 # 增加15s等待node ready
-- name: 运行calico-kube-controllers
+- name: 24.运行calico-kube-controllers
   tags: calico-controller
   shell: "sleep 15 && {{ bin_dir }}/kubectl create -f /usr/local/calico/rbac.yaml && \ 
 	{{ bin_dir }}/kubectl create -f /usr/local/calico/calico-kube-controllers.yaml"

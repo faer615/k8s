@@ -1,44 +1,37 @@
-## ---------docker daemon配置部分-----------
-- name: 下载 docker 软件包
-  copy: src={{ item }} dest=/tmp/{{ item }}
-  with_items:
-  - docker-ce-17.09.1.ce-1.el7.centos.x86_64.rpm
+- name: 01.下载 docker 软件包
+  copy: src={{ DOCKER_PKG }} dest=/tmp/{{ item }}
 
-- name: 安装 docker
-  yum: name=/tmp/{{ item }} state=installed
-  with_items:
-  - docker-ce-17.09.1.ce-1.el7.centos.x86_64.rpm
+- name: 02.安装 docker
+  yum: name=/tmp/{{ DOCKER_PKG }} state=installed
 
-- name: 清理 docker 软件包
-  file: name=/tmp/{{ item }} state=absent
-  with_items:
-  - docker-ce-17.09.1.ce-1.el7.centos.x86_64.rpm
+- name: 03.清理 docker 软件包
+  file: name=/tmp/{{ DOCKER_PKG }} state=absent
 
-- name: 创建镜像证书目录
+- name: 04.创建镜像证书目录
   file: name=/etc/docker/certs.d/registry.chinadaas.com state=directory
 
-- name: 拷贝镜像证书
+- name: 05.拷贝镜像证书
   copy: src=server.crt dest=/etc/docker/certs.d/registry.chinadaas.com
 
-- name: docker国内镜像加速
+- name: 06.docker国内镜像加速
   copy: src=daemon.json dest=/etc/docker/daemon.json
 
-- name: flush-iptables
+- name: 07.刷新iptables
   shell: "iptables -F && iptables -X \
         && iptables -F -t nat && iptables -X -t nat \
         && iptables -F -t raw && iptables -X -t raw \
         && iptables -F -t mangle && iptables -X -t mangle"
 
-- name: 开启docker 服务
+- name: 08.运行 docker 服务
   shell: systemctl daemon-reload && systemctl disable docker && systemctl enable docker && systemctl restart docker
   ignore_errors: true
 
 ## 可选 ------安装docker查询镜像 tag的小工具----
 
-- name: 安装轻量JSON处理程序
+- name: 09.安装JSON处理程序
   yum: name=jq state=latest
   tags: docker-tag
 
-- name: 下载 docker-tag
+- name: 10.下载 docker-tag
   copy: src=docker-tag dest={{ bin_dir }}/docker-tag mode=0755
   tags: docker-tag

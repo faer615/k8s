@@ -5,7 +5,7 @@
 ## 组件版本
     kubernetes	v1.9.0
     etcd	v3.2.12
-    docker	17.09.1-ce
+    docker	17.12.0-ce
     calico/node	v2.6.3
 ---
 

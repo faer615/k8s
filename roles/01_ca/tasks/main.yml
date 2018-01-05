@@ -1,10 +1,10 @@
-- name: 创建必要目录
+- name: 01.创建目录
   file: name={{ item }} state=directory
   with_items:
   - "{{ ca_dir }}"
   - "{{ base_dir }}/roles/02_pki/files/"
 
-- name: 下载证书工具 CFSSL
+- name: 02.下载证书工具 CFSSL
   copy: src={{ pkg_dir }}/pki-pkg/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
   with_items:
   - cfssl
@@ -12,30 +12,30 @@
   - cfssljson
 
 ##------- 制作 CA 证书 ----------------
-- name: 准备CA配置文件
+- name: 03.准备CA配置文件
   template: src=ca-config.json.j2 dest={{ ca_dir }}/ca-config.json
 
-- name: 拷贝CA签名请求文件
+- name: 04.拷贝CA签名文件
   template: src=ca-csr.json.j2 dest={{ ca_dir }}/ca-csr.json
 
-- name: 生成 CA 证书和私钥
+- name: 05.生成 CA 证书和私钥
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert -initca ca-csr.json | {{ bin_dir }}/cfssljson -bare ca"
 
 ##------- 制作 Etcd 证书 ----------------
-- name: 拷贝 Etcd 证书签名请求文件
+- name: 06.拷贝 Etcd 证书签名文件
   template: src=etcd-csr.json.j2 dest={{ ca_dir }}/etcd-csr.json
 
-- name: 生成 Etcd 证书和私钥
+- name: 07.生成 Etcd 证书和私钥
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert \
       -ca={{ ca_dir }}/ca.pem \
       -ca-key={{ ca_dir }}/ca-key.pem \
       -config={{ ca_dir }}/ca-config.json \
       -profile=kubernetes etcd-csr.json | {{ bin_dir }}/cfssljson -bare etcd"
 
-- name: 创建calico 证书请求
+- name: 08.创建calico 证书请求
   template: src=calico-csr.json.j2 dest={{ ca_dir }}/calico-csr.json
 
-- name: 创建 calico证书和私钥
+- name: 09.创建 calico证书和私钥
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert \
         -ca={{ ca_dir }}/ca.pem \
         -ca-key={{ ca_dir }}/ca-key.pem \
@@ -43,10 +43,10 @@
         -profile=kubernetes calico-csr.json | {{ bin_dir }}/cfssljson -bare calico"
 
 ##------- 制作 Kubernetes 证书 ----------------
-- name: 拷贝 kubernetes 证书签名请求文件
+- name: 10.拷贝 kubernetes 证书签名文件
   template: src=kubernetes-csr.json.j2 dest={{ ca_dir }}/kubernetes-csr.json
 
-- name: 生成 kubernetes 证书和私钥
+- name: 11.生成 kubernetes 证书和私钥
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert \
         -ca={{ ca_dir }}/ca.pem \
         -ca-key={{ ca_dir }}/ca-key.pem \
@@ -54,25 +54,25 @@
         -profile=kubernetes kubernetes-csr.json | {{ bin_dir }}/cfssljson -bare kubernetes"
 
 ##------- 制作 Kube-proxy 证书 ----------------
-- name: 准备kube-proxy 证书签名请求
+- name: 12.拷贝kube-proxy 证书签名
   template: src=kube-proxy-csr.json.j2 dest={{ ca_dir }}/kube-proxy-csr.json
 
-- name: 创建 kube-proxy证书与私钥
+- name: 13.创建 kube-proxy证书与私钥
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert \
         -ca={{ ca_dir }}/ca.pem \
         -ca-key={{ ca_dir }}/ca-key.pem \
         -config={{ ca_dir }}/ca-config.json \
         -profile=kubernetes kube-proxy-csr.json | {{ bin_dir }}/cfssljson -bare kube-proxy"
 
-- name: 准备kubectl使用的admin 证书签名请求
+- name: 14.拷贝kubectl使用的 admin 证书签名文件
   template: src=admin-csr.json.j2 dest={{ ca_dir }}/admin-csr.json
 
-- name: 创建 admin证书与私钥
+- name: 15.创建 admin证书与私钥
   shell: "cd {{ ca_dir }} && {{ bin_dir }}/cfssl gencert \
         -ca={{ ca_dir }}/ca.pem \
         -ca-key={{ ca_dir }}/ca-key.pem \
         -config={{ ca_dir }}/ca-config.json \
         -profile=kubernetes admin-csr.json | {{ bin_dir }}/cfssljson -bare admin"
 
-- name: 准备分发 CA证书
+- name: 16.准备分发 CA证书
   shell: "cd {{ ca_dir }} && cp *.pem ca.csr ca-config.json {{ base_dir }}/roles/02_pki/files/"
