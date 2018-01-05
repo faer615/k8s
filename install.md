@@ -3,10 +3,10 @@
 本项目部署kubernetes多节点高可用集群，具有负载均衡高可用功能，版本为v1.9.0。
 
 ## 组件版本
-    kubernetes	v1.9.0
-    etcd	v3.2.12
-    docker	17.09.1-ce
-    calico/node	v2.6.3
+    kubernetes  v1.9.0
+    etcd        v3.2.12
+    docker      17.09.1-ce
+    calico/node v2.6.3
 ---
 
 ## 高可用集群所需节点配置如下：
