@@ -45,6 +45,7 @@
   template: src=kubelet.service.j2 dest=/etc/systemd/system/kubelet.service
 
 - name: 10.启动kubelet 服务
+  tags: kube-node
   shell: systemctl daemon-reload && systemctl enable kubelet && systemctl restart kubelet
 
 - name: 11.授权客户端

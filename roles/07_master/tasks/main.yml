@@ -35,4 +35,5 @@
   shell: systemctl enable kube-apiserver kube-controller-manager kube-scheduler
 
 - name: 10.重启Master节点服务
+  tags: kube-master
   shell: systemctl restart kube-apiserver kube-controller-manager kube-scheduler

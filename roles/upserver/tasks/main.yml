@@ -1,0 +1,61 @@
+# 01.首先升级Node节点
+- name: 01.停止kubelet 服务
+  tags:
+  - kube-node
+  - reload-kube-proxy
+  shell: systemctl stop kubelet
+  ignore_errors: true
+
+- name: 02.删除旧的kubelet和kube-proxy版本
+  tags: 
+  - kube-node
+  - reload-kube-proxy
+  file: name=/usr/local/bin/{{ item }} state=absent
+  with_items:
+  - kubelet
+  - kube-proxy
+
+- name: 03.下载新 kubelet和kube-proxy版本
+  tags: 
+  - kube-node
+  - reload-kube-proxy
+  copy: src={{ pkg_dir }}/node-pkg/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
+  with_items:
+  - kubelet
+  - kube-proxy
+
+- name: 04.重新启动 kubelet和kube-proxy 服务
+  tags: 
+  - kube-node
+  - reload-kube-proxy 
+  shell: systemctl daemon-reload && systemctl restart kubelet kube-proxy
+  ignore_errors: true
+
+# 02.升级 Matser节点
+- name: 05.停止Master节点服务
+  tags: kube-master
+  shell: systemctl stop kube-apiserver kube-controller-manager kube-scheduler
+  ignore_errors: true
+
+- name: 06.删除旧的kubelet和kube-proxy版本
+  tags: kube-master
+  file: name=/usr/local/bin/{{ item }} state=absent
+  with_items:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - kubectl
+
+- name: 07.下载 kube-master 二进制
+  tags: kube-master
+  copy: src={{ pkg_dir }}/upserver-pkg/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
+  with_items:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - kubectl
+
+- name: 08.重启Master节点服务
+  tags: kube-master
+  shell: systemctl daemon-reload && systemctl restart kube-apiserver kube-controller-manager kube-scheduler
+  ignore_errors: true
